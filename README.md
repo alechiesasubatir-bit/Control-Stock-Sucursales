@@ -29,8 +29,9 @@ Lo hace el dueño de la planilla, una sola vez:
    - `Code.gs` ← `apps-script/Code.gs`
    - `Logica.gs` ← `apps-script/logica.js`
 3. **Configuración del proyecto → Propiedades del script → Agregar**: `PIN_ENCARGADO` = el PIN.
-4. Elegir la función `instalar` y tocar **Ejecutar**. Pide autorización la primera vez. Renombra
-   "Hoja 1" a SOLYMAR, crea MINAS e HISTORIAL. Se puede volver a correr sin riesgo.
+4. Elegir la función `instalar` y tocar **Ejecutar**. Pide autorización la primera vez. Crea MINAS
+   (copia de la pestaña de Solymar) e HISTORIAL. Se puede volver a correr sin riesgo. La pestaña de
+   Solymar puede llamarse "Hoja 1" o "SOLYMAR": no se renombra, para no romper otras planillas que la lean.
 5. **Implementar → Nueva implementación → Aplicación web**. *Ejecutar como*: yo. *Quién tiene
    acceso*: cualquier persona. Copiar la URL que termina en `/exec`.
 6. Pegar esa URL en `js/config.js` (`API_URL`) y publicar.

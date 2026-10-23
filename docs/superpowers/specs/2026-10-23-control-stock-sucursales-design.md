@@ -19,7 +19,7 @@ lista para subir al sistema, sin haber tocado la planilla.
 | Tema | Decisión |
 |---|---|
 | Minas | Pestaña **MINAS** en la misma planilla, mismas columnas |
-| Pestaña actual | "Hoja 1" se renombra a **SOLYMAR** |
+| Pestaña actual | "Hoja 1" **no se renombra** (decidido el 23/10 para no romper referencias externas); el script acepta "Hoja 1" o "SOLYMAR" |
 | Carga | Se escribe la cantidad y **se suma** a lo que ya hay en el sector; "Corregir" reemplaza |
 | Identidad | Nombre (sin contraseña) + sucursal, recordados en el celular |
 | Historial | Pestaña **HISTORIAL**, una fila por carga; permite deshacer |

@@ -16,16 +16,17 @@ function montar() {
   g.ctx.instalar();
   return g;
 }
-const celda = (g, hoja, fila, col) => g.hoja(hoja).filas[fila - 1][col - 1];
+// La pestaña de Solymar se queda llamando "Hoja 1": no se renombra para no romper referencias externas.
+const celda = (g, hoja, fila, col) => g.hoja(hoja === 'SOLYMAR' ? 'Hoja 1' : hoja).filas[fila - 1][col - 1];
 
 test('instalar crea SOLYMAR, MINAS e HISTORIAL y es idempotente', () => {
   const g = montar();
   g.post({ ...base, accion: 'sumar', id: 'a', sector: 'deposito', cod: '330001', cantidad: 2 });
   g.ctx.instalar();
-  assert.deepEqual(g.ss.hojas.map(h => h.nombre), ['SOLYMAR', 'MINAS', 'HISTORIAL']);
+  assert.deepEqual(g.ss.hojas.map(h => h.nombre), ['Hoja 1', 'MINAS', 'HISTORIAL']);
   assert.equal(celda(g, 'MINAS', 1, 6), 'LOCAL MINAS');
   assert.equal(celda(g, 'MINAS', 4, 6), '');
-  assert.equal(celda(g, 'SOLYMAR', 2, 5), 2);
+  assert.equal(celda(g, 'Hoja 1', 2, 5), 2);
   assert.equal(g.hoja('HISTORIAL').filas.length, 2);
 });
 
@@ -148,7 +149,7 @@ test('I2: sumar a una celda vacia y deshacer la deja vacia', () => {
 
 test('I3: sumar sobre texto escrito a mano no lo pisa y responde CONFLICTO', () => {
   const g = montar();
-  g.hoja('SOLYMAR').filas[1][4] = '12 u';
+  g.hoja('Hoja 1').filas[1][4] = '12 u';
   const r = g.post({ ...base, accion: 'sumar', id: 'a', sector: 'deposito', cod: '330001', cantidad: 5 });
   assert.equal(r.codigo, 'CONFLICTO');
   assert.match(r.error, /12 u/);
@@ -183,4 +184,11 @@ test('I1: catalogo dice cuales de las cargas pendientes del celular ya se aplica
   const r = g.post({ accion: 'catalogo', sucursal: 'solymar', pendientes: ['a', 'zz'] });
   assert.deepEqual(r.aplicados, ['a']);
   assert.deepEqual(g.post({ accion: 'catalogo', sucursal: 'solymar' }).aplicados, []);
+});
+
+test('si la pestana ya se llama SOLYMAR tambien la usa', () => {
+  const g = crearGas({ hojas: { SOLYMAR: FILAS() }, props: { PIN_ENCARGADO: '1234' } });
+  g.ctx.instalar();
+  assert.deepEqual(g.ss.hojas.map(h => h.nombre), ['SOLYMAR', 'MINAS', 'HISTORIAL']);
+  assert.equal(g.post({ ...base, accion: 'sumar', id: 'a', sector: 'deposito', cod: '330001', cantidad: 2 }).articulo.deposito, 2);
 });

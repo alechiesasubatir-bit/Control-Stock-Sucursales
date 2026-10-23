@@ -9,7 +9,7 @@
 //    1. Pegar Code.gs y Logica.gs en Extensiones → Apps Script.
 //    2. Configuración del proyecto → Propiedades del script:
 //       PIN_ENCARGADO = <pin>
-//    3. Ejecutar instalar() una vez (pide autorización).
+//    3. Ejecutar instalar() una vez (pide autorización). Crea MINAS e HISTORIAL.
 //    4. Implementar → Nueva implementación → Aplicación web
 //       Ejecutar como: yo · Acceso: cualquier persona.
 // ============================================================
@@ -50,11 +50,23 @@ function json_(o) {
 // ── Utilidades ───────────────────────────────────────────────
 function ss_() { return SpreadsheetApp.getActiveSpreadsheet(); }
 
+// Solymar puede seguir llamándose "Hoja 1": no se renombra para no romper planillas que la lean de afuera.
+var OTROS_NOMBRES = { solymar: ['Hoja 1'], minas: [] };
+
+function buscarHoja_(sucursal) {
+  var ss = ss_();
+  var nombres = [PESTANAS[sucursal]].concat(OTROS_NOMBRES[sucursal] || []);
+  for (var i = 0; i < nombres.length; i++) {
+    var h = ss.getSheetByName(nombres[i]);
+    if (h) return h;
+  }
+  return null;
+}
+
 function hoja_(sucursal) {
-  var nombre = PESTANAS[sucursal];
-  if (!nombre) throw new Error('DATOS_INVALIDOS: sucursal desconocida');
-  var h = ss_().getSheetByName(nombre);
-  if (!h) throw new Error('DATOS_INVALIDOS: no existe la pestaña ' + nombre + ' (correr instalar)');
+  if (!PESTANAS[sucursal]) throw new Error('DATOS_INVALIDOS: sucursal desconocida');
+  var h = buscarHoja_(sucursal);
+  if (!h) throw new Error('DATOS_INVALIDOS: no existe la pestaña ' + PESTANAS[sucursal] + ' (correr instalar)');
   return h;
 }
 
@@ -274,13 +286,9 @@ function limpiarConteo_(hoja, cols) {
 // ── Instalación (correr una vez a mano) ──────────────────────
 function instalar() {
   var ss = ss_();
-  if (!ss.getSheetByName(PESTANAS.solymar)) {
-    var hoja1 = ss.getSheetByName('Hoja 1');
-    if (!hoja1) throw new Error('No encuentro "Hoja 1" ni "SOLYMAR"');
-    hoja1.setName(PESTANAS.solymar);
-  }
+  var origen = buscarHoja_('solymar');
+  if (!origen) throw new Error('No encuentro la pestaña de Solymar ("Hoja 1" o "SOLYMAR")');
   if (!ss.getSheetByName(PESTANAS.minas)) {
-    var origen = ss.getSheetByName(PESTANAS.solymar);
     var minas = origen.copyTo(ss).setName(PESTANAS.minas);
     var cols = ubicarColumnas(minas.getRange(1, 1, 1, minas.getLastColumn()).getValues()[0]);
     minas.getRange(1, cols.salon + 1).setValue('LOCAL MINAS');
@@ -292,5 +300,5 @@ function instalar() {
     hist.setFrozenRows(1);
     hist.getRange(1, 1, 1, ENC_HISTORIAL.length).setFontWeight('bold');
   }
-  Logger.log('Listo: SOLYMAR, MINAS e HISTORIAL presentes.');
+  Logger.log('Listo: ' + origen.getName() + ', MINAS e HISTORIAL presentes.');
 }

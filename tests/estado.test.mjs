@@ -66,8 +66,11 @@ test('I1b: una carga en vuelo que el servidor ya aplico no se muestra dos veces'
 
 test('I1c: la cache guarda lo confirmado por el servidor, sin las cargas pendientes', async () => {
   E.registrarCarga({ accion: 'sumar', sector: 'deposito', cod: 'A', cantidad: 1 });
-  await tomar('sumar');                                // queda en vuelo
+  const enVuelo = await tomar('sumar');
   assert.equal(dep(), 21);
   const cache = JSON.parse(almacen.get('css.catalogo.solymar'));
   assert.equal(cache.articulos.find(a => a.cod === 'A').deposito, 20);
+  enVuelo.responder({ ok: true, articulo: art(21) });
+  await E.cola.procesar();
+  assert.equal(JSON.parse(almacen.get('css.catalogo.solymar')).articulos[0].deposito, 21);
 });

@@ -1,7 +1,20 @@
 // Catálogo: índice por código, búsqueda y filtros. Lógica pura, sin DOM.
 
 export function normalizarCodigo(s) {
-  return String(s ?? '').replace(/\s+/g, '').replace(/^0+/, '');
+  // Sin espacios, sin caracteres de control (algunos lectores mandan GS o Enter) y sin ceros adelante.
+  return String(s ?? '').replace(/[\s\x00-\x1f\x7f]+/g, '').replace(/^0+/, '');
+}
+
+// Algunos lectores anteponen el identificador AIM de la simbología: "]C1" (Code 128), "]E0" (EAN)…
+// Son 3 caracteres, pero hay lectores que mandan solo "]C". Se prueban las dos formas.
+const AIM = /^\][A-Za-z]/;
+function variantes(leido) {
+  const s = String(leido ?? '').replace(/[\s\x00-\x1f\x7f]+/g, '');
+  return AIM.test(s) ? [s.slice(3), s.slice(2)] : [s];
+}
+
+export function esCodigoLeido(texto) {
+  return variantes(texto).some(v => /^\d{4,}$/.test(v));
 }
 
 const sinAcentos = s => String(s ?? '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
@@ -18,8 +31,11 @@ export function crearIndice(articulos) {
 }
 
 export function buscarPorCodigo(indice, leido) {
-  const k = normalizarCodigo(leido);
-  return (k && indice.get(k)) || null;
+  for (const v of variantes(leido)) {
+    const k = normalizarCodigo(v);
+    if (k && indice.has(k)) return indice.get(k);
+  }
+  return null;
 }
 
 export function buscarTexto(articulos, texto, limite = 50) {

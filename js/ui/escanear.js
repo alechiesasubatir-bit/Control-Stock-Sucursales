@@ -1,6 +1,6 @@
 // Pantalla principal: sector, botón de escaneo con anillo de avance y buscador.
 import { estado, on, emitir, guardarPreferencias, NOMBRES } from '../estado.js';
-import { avance, buscarTexto, buscarPorCodigo } from '../catalogo.js';
+import { avance, buscarTexto, buscarPorCodigo, esCodigoLeido } from '../catalogo.js';
 import { filaArticulo } from './filas.js';
 
 const CIRCUNFERENCIA = 2 * Math.PI * 100;
@@ -33,7 +33,7 @@ export function initEscanear({ abrirVisor }) {
     const q = buscador.value;
     limpiar.hidden = !q;
     if (!q.trim()) { resultados.innerHTML = ''; return; }
-    const exacto = /^\d{4,}$/.test(q.trim()) ? buscarPorCodigo(estado.indice, q) : null;
+    const exacto = esCodigoLeido(q) ? buscarPorCodigo(estado.indice, q) : null;
     const lista = exacto ? [exacto] : buscarTexto(estado.articulos, q, 30);
     resultados.innerHTML = lista.length
       ? lista.map(a => filaArticulo(a, estado.sector, q)).join('')

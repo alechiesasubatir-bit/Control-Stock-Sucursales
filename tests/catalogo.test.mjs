@@ -44,3 +44,20 @@ test('total', () => {
   assert.equal(C.total(A[1]), null);
   assert.equal(C.total(A[2]), 2);
 });
+
+test('lectura con prefijo AIM de 3 caracteres (]C1) encuentra el articulo', () => {
+  assert.equal(C.buscarPorCodigo(C.crearIndice(A), ']C17891799092450').cod, '330056');
+  assert.equal(C.buscarPorCodigo(C.crearIndice(A), ']E04056807558707').cod, '330056');
+});
+test('lectura con prefijo de 2 caracteres (]C) encuentra el articulo', () => {
+  assert.equal(C.buscarPorCodigo(C.crearIndice(A), ']C7891799092450').cod, '330056');
+});
+test('caracteres de control del lector se ignoran', () => {
+  assert.equal(C.buscarPorCodigo(C.crearIndice(A), '\x1d7891799092450\r\n').cod, '330056');
+});
+test('esCodigoLeido reconoce numeros con o sin prefijo', () => {
+  assert.equal(C.esCodigoLeido(']C17891799092450'), true);
+  assert.equal(C.esCodigoLeido('7891799092450'), true);
+  assert.equal(C.esCodigoLeido('lavandina'), false);
+  assert.equal(C.esCodigoLeido('210'), false);
+});

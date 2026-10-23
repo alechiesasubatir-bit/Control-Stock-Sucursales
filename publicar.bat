@@ -6,6 +6,14 @@ echo        PUBLICAR CONTROL STOCK SUCURSALES
 echo  ==========================================
 echo.
 
+:: Si algun test falla no se publica nada.
+call npm test
+if errorlevel 1 (
+  echo  ERROR: fallan los tests. No se publico nada.
+  pause
+  exit /b 1
+)
+
 :: Sube la version en js/config.js y sw.js para que los celulares tomen el cambio.
 :: Este archivo tiene que quedar en ASCII y con saltos CRLF.
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0version.ps1"

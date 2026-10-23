@@ -1,6 +1,7 @@
 // Arranque y navegación.
 import { estado, on, cola, cargarCatalogo, cambiarSucursal, NOMBRES } from './estado.js';
 import { logoSVG } from './logo.js';
+import { VERSION } from './config.js';
 import { initIngreso } from './ui/ingreso.js';
 import { ir, registrarPantalla } from './nav.js';
 import { initEscanear } from './ui/escanear.js';
@@ -27,6 +28,7 @@ function pintarEncabezado() {
   $('encabezado-sucursal').textContent = NOMBRES[estado.sucursal] || '—';
   $('encabezado-usuario').textContent = estado.usuario;
   $('menu-quien').textContent = `${estado.usuario} · ${NOMBRES[estado.sucursal] || ''}`;
+  $('menu-version').textContent = 'Versión ' + VERSION;
 }
 
 function pintarRed() {

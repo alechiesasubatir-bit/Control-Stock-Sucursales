@@ -8,9 +8,23 @@ export function normalizarCodigo(s) {
 // Algunos lectores anteponen el identificador AIM de la simbología: "]C1" (Code 128), "]E0" (EAN)…
 // Son 3 caracteres, pero hay lectores que mandan solo "]C". Se prueban las dos formas.
 const AIM = /^\][A-Za-z]/;
+// GS1-128 (bultos y cajas): "01" + GTIN de 14 dígitos + otros datos (vencimiento, lote…).
+// El GTIN-14 de un producto suelto es su EAN-13 con un 0 adelante.
+const GS1 = /^01(\d{14})/;
+
+// Formas posibles de un código leído, de la más literal a la más interpretada.
 function variantes(leido) {
   const s = String(leido ?? '').replace(/[\s\x00-\x1f\x7f]+/g, '');
-  return AIM.test(s) ? [s.slice(3), s.slice(2)] : [s];
+  const base = AIM.test(s) ? [s.slice(3), s.slice(2)] : [s];
+  const out = [];
+  for (const b of base) {
+    const sinParentesis = b.replace(/[()]/g, '');
+    out.push(b);
+    if (sinParentesis !== b) out.push(sinParentesis);
+    const gs1 = GS1.exec(sinParentesis);
+    if (gs1) out.push(gs1[1]);
+  }
+  return out;
 }
 
 export function esCodigoLeido(texto) {

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="theme-color" content="#07090f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Stock Sucursales · Prolimpio</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="fondo" aria-hidden="true">
+    <span class="burbuja b1"></span><span class="burbuja b2"></span><span class="burbuja b3"></span>
+    <span class="burbuja b4"></span><span class="burbuja b5"></span><span class="burbuja b6"></span>
+  </div>
+
+  <!-- ── Ingreso ─────────────────────────────────────────── -->
+  <section class="pantalla" data-p="ingreso" hidden>
+    <div class="ingreso">
+      <div class="ingreso-logo" id="ingreso-logo"></div>
+      <h1 class="ingreso-titulo">Control de stock</h1>
+      <p class="ingreso-sub">Elegí tu sucursal para empezar</p>
+      <div class="sucursales" role="radiogroup" aria-label="Sucursal">
+        <button class="sucursal" role="radio" data-sucursal="solymar" aria-checked="false">
+          <span class="sucursal-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v2M5.6 5.6l1.4 1.4M3 12h2M18.4 5.6 17 7M21 12h-2M7 12a5 5 0 0 1 10 0"/><path d="M3 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0M3 20c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0 3-1 4.5 0"/></svg></span>
+          <span class="sucursal-nombre">Solymar</span>
+          <span class="sucursal-detalle">Canelones</span>
+        </button>
+        <button class="sucursal" role="radio" data-sucursal="minas" aria-checked="false">
+          <span class="sucursal-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m2 20 6.5-11 4 6.5L15 12l7 8z"/><path d="m6.5 12.5 2-1.5 2 1.5"/></svg></span>
+          <span class="sucursal-nombre">Minas</span>
+          <span class="sucursal-detalle">Lavalleja</span>
+        </button>
+      </div>
+      <label class="campo">
+        <span class="campo-etiqueta">Tu nombre</span>
+        <input id="ingreso-nombre" type="text" autocomplete="given-name" maxlength="40" enterkeyhint="go" placeholder="Ej. Lucía">
+      </label>
+      <button class="boton boton-principal boton-ancho" id="ingreso-empezar" disabled>
+        Empezar
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ── Encabezado y navegación (pantallas de trabajo) ──── -->
+  <header class="encabezado" id="encabezado" hidden>
+    <div class="encabezado-marca">
+      <span class="encabezado-logo" id="encabezado-logo"></span>
+      <span class="encabezado-texto">
+        <span class="encabezado-sucursal" id="encabezado-sucursal">—</span>
+        <span class="encabezado-usuario" id="encabezado-usuario"></span>
+      </span>
+    </div>
+    <button class="red" id="indicador-red" aria-live="polite" title="Estado de conexión">
+      <span class="red-punto"></span><span class="red-texto">Al día</span>
+    </button>
+    <button class="icono-boton" id="abrir-menu" aria-label="Menú">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+    </button>
+  </header>
+
+  <main class="contenido">
+    <!-- Escanear -->
+    <section class="pantalla" data-p="escanear" hidden>
+      <div class="sector" role="tablist" aria-label="Sector">
+        <span class="sector-pastilla" aria-hidden="true"></span>
+        <button role="tab" data-sector="deposito" aria-selected="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V8l9-5 9 5v13"/><path d="M7 21v-8h10v8M7 17h10"/></svg>Depósito
+        </button>
+        <button role="tab" data-sector="salon" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10h16l-1.5-6h-13z"/><path d="M5 10v10h14V10M10 20v-5h4v5"/></svg>Salón
+        </button>
+      </div>
+
+      <div class="escaner-hero">
+        <svg class="anillo" viewBox="0 0 220 220" aria-hidden="true">
+          <defs>
+            <linearGradient id="grad-anillo" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fbb03b"/><stop offset="1" stop-color="#f26b3a"/>
+            </linearGradient>
+          </defs>
+          <circle class="anillo-fondo" cx="110" cy="110" r="100"/>
+          <circle class="anillo-valor" id="anillo-valor" cx="110" cy="110" r="100"/>
+        </svg>
+        <button class="boton-escanear" id="boton-escanear" aria-label="Escanear código de barras">
+          <span class="boton-escanear-onda" aria-hidden="true"></span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>
+          <span>Escanear</span>
+        </button>
+      </div>
+      <p class="avance" id="avance-texto"><b class="mono" id="avance-num">0</b> de <span class="mono" id="avance-total">0</span> artículos contados en <span id="avance-sector">Depósito</span></p>
+
+      <label class="buscador">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="buscador" type="search" placeholder="Buscar por nombre o código" autocomplete="off" enterkeyhint="search">
+        <button class="buscador-limpiar" id="buscador-limpiar" aria-label="Limpiar búsqueda" hidden>
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </label>
+      <ul class="resultados lista" id="resultados" aria-live="polite"></ul>
+    </section>
+
+    <!-- Artículos -->
+    <section class="pantalla" data-p="articulos" hidden>
+      <h2 class="titulo-pantalla">Artículos</h2>
+      <div class="kpis">
+        <div class="kpi"><span class="kpi-num mono" id="kpi-deposito">0</span><span class="kpi-et">Depósito</span></div>
+        <div class="kpi"><span class="kpi-num mono" id="kpi-salon">0</span><span class="kpi-et">Salón</span></div>
+        <div class="kpi"><span class="kpi-num mono" id="kpi-coment">0</span><span class="kpi-et">Comentarios</span></div>
+      </div>
+      <div class="chips" role="tablist" aria-label="Filtro">
+        <button class="chip" data-filtro="todos" aria-selected="true">Todos</button>
+        <button class="chip" data-filtro="contados" aria-selected="false">Contados</button>
+        <button class="chip" data-filtro="sinContar" aria-selected="false">Sin contar</button>
+        <button class="chip" data-filtro="comentados" aria-selected="false">Con comentario</button>
+      </div>
+      <label class="buscador">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="buscador-articulos" type="search" placeholder="Filtrar la lista" autocomplete="off">
+      </label>
+      <p class="lista-cuenta" id="articulos-cuenta"></p>
+      <ul class="lista" id="lista-articulos"></ul>
+      <div class="centinela" id="articulos-centinela"></div>
+    </section>
+
+    <!-- Mis cargas -->
+    <section class="pantalla" data-p="cargas" hidden>
+      <h2 class="titulo-pantalla">Mis cargas</h2>
+      <p class="pantalla-sub">Lo que cargaste en este conteo. Deslizá una fila a la izquierda o tocá ↶ para deshacerla.</p>
+      <ul class="lista" id="lista-cargas"></ul>
+      <div class="vacio" id="cargas-vacio" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>
+        <p>Todavía no cargaste nada.<br>Escaneá un producto para empezar.</p>
+      </div>
+    </section>
+
+    <!-- Encargado -->
+    <section class="pantalla" data-p="encargado" hidden>
+      <h2 class="titulo-pantalla">Encargado</h2>
+      <div class="tarjeta" id="encargado-pin">
+        <p class="pantalla-sub">Ingresá el PIN de encargado.</p>
+        <input class="pin" id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="8" aria-label="PIN">
+        <button class="boton boton-principal boton-ancho" id="pin-entrar">Entrar</button>
+      </div>
+      <div id="encargado-panel" hidden>
+        <div class="tarjeta resumen" id="encargado-resumen"></div>
+        <div class="tarjeta peligro">
+          <h3>Nuevo conteo</h3>
+          <p>Guarda una copia de la pestaña <b id="nc-pestana"></b> con la fecha y la deja en blanco (Depósito, Salón y Comentarios). El historial no se borra.</p>
+          <button class="boton boton-peligro boton-ancho" id="nc-iniciar">Empezar nuevo conteo</button>
+          <div id="nc-confirmar" hidden>
+            <label class="campo">
+              <span class="campo-etiqueta">Para confirmar, escribí <b id="nc-palabra"></b></span>
+              <input id="nc-texto" type="text" autocomplete="off" autocapitalize="characters">
+            </label>
+            <button class="boton boton-peligro boton-ancho" id="nc-ejecutar" disabled>Archivar y poner en blanco</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="barra" id="barra" hidden>
+    <button data-ir="escanear" aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>
+      <span>Escanear</span>
+    </button>
+    <button data-ir="articulos">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/></svg>
+      <span>Artículos</span>
+    </button>
+    <button data-ir="cargas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v4l3 2"/><path d="M3.05 11a9 9 0 1 1 .5 4M3 4v7h7"/></svg>
+      <span>Mis cargas</span>
+      <span class="barra-insignia mono" id="insignia-pendientes" hidden>0</span>
+    </button>
+  </nav>
+
+  <!-- Menú -->
+  <div class="menu" id="menu" hidden>
+    <div class="menu-panel" role="menu">
+      <p class="menu-quien" id="menu-quien"></p>
+      <button role="menuitem" data-menu="sucursal">Cambiar sucursal o nombre</button>
+      <button role="menuitem" data-menu="actualizar">Actualizar datos</button>
+      <button role="menuitem" data-menu="encargado">Encargado</button>
+    </div>
+  </div>
+
+  <!-- Visor de cámara -->
+  <div class="visor" id="visor" hidden>
+    <video id="visor-video" playsinline muted></video>
+    <div class="visor-marco" aria-hidden="true">
+      <span class="esq e1"></span><span class="esq e2"></span><span class="esq e3"></span><span class="esq e4"></span>
+      <span class="laser"></span>
+    </div>
+    <p class="visor-ayuda" id="visor-ayuda">Apuntá al código de barras</p>
+    <div class="visor-acciones">
+      <button class="icono-boton grande" id="visor-linterna" aria-label="Linterna" hidden>
+        <svg viewBox="0 0 24 24"><path d="M8 2h8v5l-2 3v12h-4V10L8 7z"/><path d="M12 14v2"/></svg>
+      </button>
+      <button class="icono-boton grande" id="visor-buscar" aria-label="Buscar a mano">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <button class="icono-boton grande" id="visor-cerrar" aria-label="Cerrar cámara">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="visor-error" id="visor-error" hidden></div>
+  </div>
+
+  <!-- Ficha del artículo -->
+  <div class="hoja-fondo" id="ficha-fondo" hidden></div>
+  <section class="hoja" id="ficha" role="dialog" aria-modal="true" aria-labelledby="ficha-desc" hidden>
+    <div class="hoja-agarre" id="ficha-agarre" aria-hidden="true"><span></span></div>
+    <header class="ficha-cabeza">
+      <h2 id="ficha-desc">—</h2>
+      <p class="ficha-meta"><span class="mono" id="ficha-cod"></span><span id="ficha-precio" class="mono"></span></p>
+      <p class="ficha-codigos mono" id="ficha-codigos"></p>
+    </header>
+    <div class="ficha-numeros">
+      <div class="numero" data-n="deposito"><span class="numero-et">Depósito</span><span class="numero-v mono">—</span></div>
+      <div class="numero" data-n="salon"><span class="numero-et">Salón</span><span class="numero-v mono">—</span></div>
+      <div class="numero total" data-n="total"><span class="numero-et">Total</span><span class="numero-v mono">—</span></div>
+    </div>
+    <p class="ficha-comentario" id="ficha-comentario" hidden></p>
+
+    <div class="ficha-modo" role="tablist" aria-label="Modo">
+      <button role="tab" data-modo="sumar" aria-selected="true">Sumar</button>
+      <button role="tab" data-modo="corregir" aria-selected="false">Corregir</button>
+      <button role="tab" data-modo="comentar" aria-selected="false">Comentario</button>
+    </div>
+
+    <div class="ficha-cantidad" id="ficha-cantidad">
+      <div class="visor-num">
+        <button class="paso" data-paso="-1" aria-label="Uno menos"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+        <output class="mono" id="ficha-n" aria-live="polite">0</output>
+        <button class="paso" data-paso="1" aria-label="Uno más"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <p class="ficha-aviso" id="ficha-aviso" hidden>Reemplaza el número actual de <b></b>.</p>
+      <div class="teclado" id="teclado">
+        <button>1</button><button>2</button><button>3</button>
+        <button>4</button><button>5</button><button>6</button>
+        <button>7</button><button>8</button><button>9</button>
+        <button data-t="limpiar" aria-label="Borrar todo">C</button><button>0</button>
+        <button data-t="borrar" aria-label="Borrar"><svg viewBox="0 0 24 24"><path d="M21 5H9l-6 7 6 7h12z"/><path d="m17 9-6 6M11 9l6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="ficha-texto" id="ficha-texto" hidden>
+      <textarea id="ficha-textarea" rows="3" maxlength="300" placeholder="Ej. 3 envases golpeados, vence en marzo…"></textarea>
+    </div>
+    <button class="boton boton-principal boton-ancho ficha-ok" id="ficha-ok">Sumar</button>
+    <svg class="tilde" id="tilde" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="m15 27 7 7 15-16"/></svg>
+  </section>
+
+  <div class="avisos" id="avisos" aria-live="assertive"></div>
+  <canvas class="confeti" id="confeti" aria-hidden="true"></canvas>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

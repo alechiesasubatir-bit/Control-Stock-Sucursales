@@ -1,3 +1,5 @@
+/** @OnlyCurrentDoc */
+// Pide permiso solo sobre esta planilla, no sobre todas las del usuario.
 // ============================================================
 //  PROLIMPIO — Control de Stock Sucursales | Apps Script
 //  Vinculado a la planilla "BALANCE SOLYMAR ALTERNATIVOS".

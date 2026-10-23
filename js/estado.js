@@ -151,7 +151,9 @@ export function deshacerCarga(reg) {
 // En pantalla = lo último que confirmó el servidor + las cargas que siguen en la cola.
 // "servidor" nunca lleva cargas pendientes encima; es lo que se guarda en la caché.
 const servidor = new Map();
-const confirmadoEn = new Map();   // cod → hora del último resultado del servidor
+const confirmadoEn = new Map();   // cod → número de orden del último resultado del servidor
+// Contador en vez de reloj: dos eventos en el mismo milisegundo no quedan empatados.
+let orden = 0;
 const yaAplicadas = new Set();    // cargas en la cola que el servidor ya tiene (lo informó el catálogo)
 const clonar = a => ({ ...a, codigos: [...(a.codigos || [])] });
 
@@ -180,19 +182,19 @@ function guardarCache() {
 
 function confirmar(a) {
   servidor.set(a.cod, clonar(a));
-  confirmadoEn.set(a.cod, Date.now());
+  confirmadoEn.set(a.cod, ++orden);
   if (!estado.porCod.has(a.cod)) { estado.articulos.push(clonar(a)); indexar(); }
   reconstruir(a.cod);
   guardarCache();
 }
 
-// desde: hora en que se pidió el catálogo. Un artículo confirmado después de esa hora
+// desde: número de orden cuando se pidió el catálogo. Un artículo confirmado después
 // es más nuevo que el catálogo y se conserva.
 function aplicarCatalogo(c, { desde = null, aplicados = [] } = {}) {
   const nuevos = new Map();
   for (const a of c.articulos) {
     const previo = servidor.get(a.cod);
-    const masNuevo = desde !== null && previo && (confirmadoEn.get(a.cod) ?? -1) >= desde;
+    const masNuevo = desde !== null && previo && (confirmadoEn.get(a.cod) ?? -1) > desde;
     nuevos.set(a.cod, masNuevo ? previo : clonar(a));
   }
   servidor.clear();
@@ -225,7 +227,7 @@ export async function cargarCatalogo() {
   if (estado.cargando) return;
   estado.cargando = true;
   emitir('red');
-  const desde = Date.now();
+  const desde = ++orden;
   const pendientes = cola.pendientes().filter(o => o.sucursal === suc).map(o => o.id);
   try {
     const r = await llamar({ accion: 'catalogo', sucursal: suc, pendientes }, { timeout: 30000 });

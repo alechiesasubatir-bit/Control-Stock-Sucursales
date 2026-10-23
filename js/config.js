@@ -2,4 +2,4 @@
 // OJO: por ahora apunta a la COPIA DE PRUEBA de la planilla.
 export const API_URL = 'https://script.google.com/macros/s/AKfycby2zVHfS0dKdvsdl-rshi3t_ynp0jg226nqJxi-UwTgGk-ko12zG6l0LfPksPtvzLyTtQ/exec';
 // La escribe publicar.bat.
-export const VERSION = '2026.10.23-1211';
+export const VERSION = '2026.10.23-1214';

@@ -26,7 +26,7 @@
   --radio-s: 14px;
   --f-titulo: 'DM Sans', system-ui, sans-serif;
   --f-texto: 'DM Sans', system-ui, sans-serif;
-  --f-num: 'IBM Plex Mono', ui-monospace, monospace;
+  --f-num: 'DM Sans', system-ui, sans-serif;
   --resorte: cubic-bezier(.2, .9, .25, 1.15);
   --suave: cubic-bezier(.22, 1, .36, 1);
   --seguro-arriba: env(safe-area-inset-top, 0px);

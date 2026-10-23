@@ -22,7 +22,9 @@ Pruebas: `npm test` (Node 18 o más nuevo, sin dependencias). Incluye una planil
 
 ## Poner en marcha el Apps Script
 
-Lo hace el dueño de la planilla, una sola vez:
+La planilla real es de **ximena@prolimpio.com.uy**. Un editor puede pegar el código y ejecutar
+`instalar()`, pero **publicar la aplicación web (paso 5) lo tiene que hacer la dueña**: Google no deja
+que un editor de otra organización la publique. Los pasos, una sola vez:
 
 1. Abrir la planilla → **Extensiones → Apps Script**.
 2. Crear dos archivos y pegar el contenido:
@@ -37,7 +39,10 @@ Lo hace el dueño de la planilla, una sola vez:
 6. Pegar esa URL en `js/config.js` (`API_URL`) y publicar.
 
 Cuando se cambia `Code.gs` o `Logica.gs`: **Implementar → Gestionar implementaciones → editar
-(lápiz) → Versión: nueva versión**. Así la URL no cambia.
+(lápiz) → Versión: nueva versión**. Así la URL no cambia. Esto también lo hace la dueña.
+
+Para probar cambios sin tocar la real está la copia "BALANCE SOLYMAR ALTERNATIVOS — PRUEBA APP",
+con su propio script y su propia URL `/exec`.
 
 ## Publicar
 

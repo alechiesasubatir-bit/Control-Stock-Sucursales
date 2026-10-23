@@ -94,3 +94,6 @@ test('validar rechaza decimales, ceros, negativos y sucursal desconocida', () =>
   assert.ok(L.validar({ ...base, id: '', accion: 'sumar', cantidad: 1 }));
   assert.equal(L.validar({ id: 'x', sucursal: 'minas', cod: '1', usuario: 'Ana', accion: 'comentar', texto: '' }), null);
 });
+test('filasDeArticulo acepta un alternativo y devuelve el grupo de su cod art', () => {
+  assert.deepEqual(L.filasDeArticulo(V, L.ubicarColumnas(ENC), '07891799092450'), [2, 3, 4]);
+});

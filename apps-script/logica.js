@@ -87,6 +87,12 @@ function filasDeArticulo(valores, cols, cod) {
   for (var i = 0; i < valores.length; i++) {
     if (normalizar_(claveFila_(valores[i], cols)) === buscado) out.push(i + 2);
   }
+  if (!out.length) {
+    // Llegó un alternativo: se resuelve al Cod. Art de su fila.
+    for (var j = 0; j < valores.length; j++) {
+      if (normalizar_(valores[j][cols.alt]) === buscado) return filasDeArticulo(valores, cols, claveFila_(valores[j], cols));
+    }
+  }
   return out;
 }
 

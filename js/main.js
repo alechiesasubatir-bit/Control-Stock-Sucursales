@@ -5,6 +5,7 @@ import { initIngreso } from './ui/ingreso.js';
 import { ir, registrarPantalla } from './nav.js';
 import { initEscanear } from './ui/escanear.js';
 import { initVisor } from './ui/visor.js';
+import { initFicha } from './ui/ficha.js';
 
 const $ = id => document.getElementById(id);
 // ── Avisos ───────────────────────────────────────────────
@@ -66,6 +67,7 @@ registrarPantalla('ingreso', initIngreso({
 const escanear = initEscanear({ abrirVisor: () => visor.abrir() });
 registrarPantalla('escanear', escanear);
 const visor = initVisor({ buscarAMano: codigo => { ir('escanear'); escanear.buscarTexto(codigo); } });
+initFicha({ reabrirVisor: () => visor.abrir() });
 
 function arrancar() {
   if (!estado.usuario || !estado.sucursal) { ir('ingreso'); return; }

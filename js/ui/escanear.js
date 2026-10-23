@@ -46,9 +46,6 @@ export function initEscanear({ abrirVisor }) {
     estado.sector = b.dataset.sector;
     guardarPreferencias();
     navigator.vibrate?.(8);
-    pintarSector();
-    pintarAvance();
-    buscar();
     emitir('sector');
   });
   $('boton-escanear').addEventListener('click', () => abrirVisor());
@@ -65,6 +62,7 @@ export function initEscanear({ abrirVisor }) {
   });
 
   on('catalogo', () => { pintarAvance(); buscar(); });
+  on('sector', () => { pintarSector(); pintarAvance(); buscar(); });
   on('articulo', () => { pintarAvance(); if (buscador.value) buscar(); });
 
   return {

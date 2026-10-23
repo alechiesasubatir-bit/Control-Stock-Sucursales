@@ -104,7 +104,7 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
   color: var(--txt2); transition: background-color .2s, color .2s, transform .15s;
 }
 .icono-boton:active { transform: scale(.92); }
-.icono-boton svg circle { fill: currentColor; stroke: none; }
+#abrir-menu svg circle { fill: currentColor; stroke: none; }
 .icono-boton.grande { width: 60px; height: 60px; border-radius: 50%; background: rgba(7, 9, 15, .55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid var(--borde2); color: #fff; }
 
 /* ── Pantallas ──────────────────────────────────────────── */

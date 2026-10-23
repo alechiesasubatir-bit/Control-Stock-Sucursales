@@ -3,6 +3,8 @@ import { estado, on, cola, cargarCatalogo, cambiarSucursal, NOMBRES } from './es
 import { logoSVG } from './logo.js';
 import { initIngreso } from './ui/ingreso.js';
 import { ir, registrarPantalla } from './nav.js';
+import { initEscanear } from './ui/escanear.js';
+import { initVisor } from './ui/visor.js';
 
 const $ = id => document.getElementById(id);
 // ── Avisos ───────────────────────────────────────────────
@@ -60,6 +62,10 @@ registrarPantalla('ingreso', initIngreso({
     ir('escanear');
   },
 }));
+
+const escanear = initEscanear({ abrirVisor: () => visor.abrir() });
+registrarPantalla('escanear', escanear);
+const visor = initVisor({ buscarAMano: codigo => { ir('escanear'); escanear.buscarTexto(codigo); } });
 
 function arrancar() {
   if (!estado.usuario || !estado.sucursal) { ir('ingreso'); return; }

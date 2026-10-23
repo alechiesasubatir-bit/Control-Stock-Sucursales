@@ -112,7 +112,10 @@ function comoTexto_(v) {
 function calcularDeshacer(reg, actual) {
   if (reg.estado === 'deshecho') return { error: 'DATOS_INVALIDOS' };
   if (reg.accion === 'sumar') {
-    return { valor: Math.max(0, (parsearCantidad(actual) || 0) - Number(reg.cantidad)) };
+    var v = Math.max(0, (parsearCantidad(actual) || 0) - Number(reg.cantidad));
+    // Si la celda estaba vacía y vuelve a 0, queda vacía: vacío es "sin contar", 0 es "contado en cero".
+    var estabaVacia = reg.antes === '' || reg.antes === null || reg.antes === undefined;
+    return { valor: estabaVacia && v === 0 ? null : v };
   }
   if (reg.accion === 'corregir' || reg.accion === 'comentar') {
     if (comoTexto_(actual) !== comoTexto_(reg.despues)) return { error: 'CONFLICTO' };
@@ -120,6 +123,15 @@ function calcularDeshacer(reg, actual) {
     return { valor: antes };
   }
   return { error: 'DATOS_INVALIDOS' };
+}
+
+// Primer valor escrito a mano en esas filas que no se puede leer como número (o null).
+function textoNoNumerico(valores, filas, col) {
+  for (var i = 0; i < filas.length; i++) {
+    var v = valores[filas[i] - 2][col];
+    if (v !== '' && v !== null && v !== undefined && parsearCantidad(v) === null) return String(v);
+  }
+  return null;
 }
 
 function buscarPorId(historial, id) {
@@ -153,7 +165,7 @@ if (typeof module !== 'undefined') {
   module.exports = {
     ubicarColumnas: ubicarColumnas, parsearCantidad: parsearCantidad, agruparFilas: agruparFilas,
     filaDeArticulo: filaDeArticulo, filasDeArticulo: filasDeArticulo, aplicar: aplicar,
-    calcularDeshacer: calcularDeshacer, buscarPorId: buscarPorId, nombreArchivo: nombreArchivo,
+    calcularDeshacer: calcularDeshacer, buscarPorId: buscarPorId, textoNoNumerico: textoNoNumerico, nombreArchivo: nombreArchivo,
     validar: validar,
   };
 }

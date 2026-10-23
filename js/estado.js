@@ -58,14 +58,19 @@ export const cola = crearCola({
 cola.onCambio(() => emitir('red'));
 
 cola.onResultado((op, r) => {
+  yaAplicadas.delete(op.id);
   const reg = cargaPorId(op.id);
   if (reg && op.accion !== 'deshacer') reg.estado = 'guardada';
   guardarCargas();
-  if (r.articulo && op.sucursal === estado.sucursal) actualizarArticulo(r.articulo);
+  if (op.sucursal === estado.sucursal) {
+    if (r.articulo) confirmar(r.articulo);
+    else reconstruir(op.cod);
+  }
   emitir('cargas');
 });
 
 cola.onError((op, r) => {
+  yaAplicadas.delete(op.id);
   const texto = r?.error || 'No se pudo guardar';
   if (op.accion === 'deshacer') {
     const orig = cargaPorId(op.idOriginal);
@@ -77,6 +82,7 @@ cola.onError((op, r) => {
     aviso('No se guardó: ' + texto, 'error');
   }
   guardarCargas();
+  if (op.sucursal === estado.sucursal) reconstruir(op.cod);
   emitir('cargas');
   cargarCatalogo();
 });
@@ -90,18 +96,15 @@ function guardarCargas() {
 
 export const cargasVisibles = () => estado.cargas.filter(c => c.sucursal === estado.sucursal && c.accion !== 'deshacer');
 
-// Aplica una operación sobre el artículo en memoria y devuelve el valor anterior.
-function aplicarLocal(op, art) {
-  if (!art) return undefined;
-  if (op.accion === 'sumar') { const antes = art[op.sector]; art[op.sector] = (antes ?? 0) + op.cantidad; return antes; }
-  if (op.accion === 'corregir') { const antes = art[op.sector]; art[op.sector] = op.valor; return antes; }
-  if (op.accion === 'comentar') { const antes = art.comentario; art.comentario = op.texto; return antes; }
-  if (op.accion === 'deshacer') { const orig = cargaPorId(op.idOriginal); if (orig) revertirLocal(orig, art); }
-  return undefined;
+// Aplica una carga pendiente sobre el artículo en pantalla.
+function aplicarOp(op, art) {
+  if (op.accion === 'sumar') art[op.sector] = (art[op.sector] ?? 0) + op.cantidad;
+  else if (op.accion === 'corregir') art[op.sector] = op.valor;
+  else if (op.accion === 'comentar') art.comentario = op.texto;
+  else if (op.accion === 'deshacer') { const orig = cargaPorId(op.idOriginal); if (orig) revertirLocal(orig, art); }
 }
 
 function revertirLocal(reg, art) {
-  if (!art) return;
   if (reg.accion === 'sumar') {
     const v = Math.max(0, (art[reg.sector] ?? 0) - reg.cantidad);
     art[reg.sector] = reg.antes === null && v === 0 ? null : v;
@@ -115,15 +118,15 @@ function revertirLocal(reg, art) {
 export function registrarCarga(datos) {
   const op = { ...datos, id: datos.id || nuevoId(), sucursal: estado.sucursal, usuario: estado.usuario };
   const art = estado.porCod.get(op.cod);
-  const antes = aplicarLocal(op, art);
+  const antes = !art ? null : op.accion === 'comentar' ? art.comentario : op.sector ? art[op.sector] : null;
   estado.cargas.unshift({
     id: op.id, accion: op.accion, sucursal: op.sucursal, sector: op.sector, cod: op.cod,
     desc: art?.desc || op.cod, cantidad: op.cantidad, valor: op.valor, texto: op.texto,
-    idOriginal: op.idOriginal, antes: antes === undefined ? null : antes, hora: Date.now(), estado: 'pendiente',
+    idOriginal: op.idOriginal, antes: antes ?? null, hora: Date.now(), estado: 'pendiente',
   });
   guardarCargas();
   cola.agregar(op);
-  emitir('articulo', art);
+  reconstruir(op.cod);
   emitir('cargas');
   cola.procesar();
   return op;
@@ -131,27 +134,38 @@ export function registrarCarga(datos) {
 
 export function deshacerCarga(reg) {
   if (reg.estado === 'deshecha' || reg.estado === 'error') return;
-  const art = estado.porCod.get(reg.cod);
   if (cola.quitar(reg.id)) {
-    // Nunca llegó al servidor: se borra de la cola y se revierte en pantalla.
-    revertirLocal(reg, art);
+    // Nunca salió del celular: se borra de la cola y la pantalla se recalcula sin ella.
     reg.estado = 'deshecha';
     guardarCargas();
+    reconstruir(reg.cod);
   } else {
-    registrarCarga({ accion: 'deshacer', cod: reg.cod, idOriginal: reg.id });
+    // Ya salió (o pudo salir): se encola un deshacer detrás y el servidor los aplica en orden.
     reg.estado = 'deshecha';
-    guardarCargas();
+    registrarCarga({ accion: 'deshacer', cod: reg.cod, idOriginal: reg.id });
   }
-  emitir('articulo', art);
   emitir('cargas');
 }
 
 // ── Catálogo ─────────────────────────────────────────────
-function reaplicarPendientes(cod) {
-  for (const op of cola.pendientes()) {
-    if (op.sucursal !== estado.sucursal || (cod && op.cod !== cod)) continue;
-    aplicarLocal(op, estado.porCod.get(op.cod));
-  }
+// En pantalla = lo último que confirmó el servidor + las cargas que siguen en la cola.
+// "servidor" nunca lleva cargas pendientes encima; es lo que se guarda en la caché.
+const servidor = new Map();
+const confirmadoEn = new Map();   // cod → hora del último resultado del servidor
+const yaAplicadas = new Set();    // cargas en la cola que el servidor ya tiene (lo informó el catálogo)
+const clonar = a => ({ ...a, codigos: [...(a.codigos || [])] });
+
+function pendientesDe(cod) {
+  return cola.pendientes().filter(op => op.sucursal === estado.sucursal && (!cod || op.cod === cod) && !yaAplicadas.has(op.id));
+}
+
+function reconstruir(cod) {
+  const art = estado.porCod.get(cod);
+  const base = servidor.get(cod);
+  if (!art || !base) return;
+  Object.assign(art, clonar(base));
+  for (const op of pendientesDe(cod)) aplicarOp(op, art);
+  emitir('articulo', art);
 }
 
 function indexar() {
@@ -159,18 +173,34 @@ function indexar() {
   estado.indice = crearIndice(estado.articulos);
 }
 
-export function actualizarArticulo(a) {
-  const actual = estado.porCod.get(a.cod);
-  if (actual) Object.assign(actual, a);
-  else { estado.articulos.push(a); indexar(); }
-  reaplicarPendientes(a.cod);
-  emitir('articulo', estado.porCod.get(a.cod));
+function guardarCache() {
+  const articulos = estado.articulos.map(a => servidor.get(a.cod)).filter(Boolean);
+  escribir('css.catalogo.' + estado.sucursal, { articulos, conteo: estado.conteo });
 }
 
-function aplicarCatalogo(c) {
-  estado.articulos = c.articulos.map(a => ({ ...a }));
+function confirmar(a) {
+  servidor.set(a.cod, clonar(a));
+  confirmadoEn.set(a.cod, Date.now());
+  if (!estado.porCod.has(a.cod)) { estado.articulos.push(clonar(a)); indexar(); }
+  reconstruir(a.cod);
+  guardarCache();
+}
+
+// desde: hora en que se pidió el catálogo. Un artículo confirmado después de esa hora
+// es más nuevo que el catálogo y se conserva.
+function aplicarCatalogo(c, { desde = null, aplicados = [] } = {}) {
+  const nuevos = new Map();
+  for (const a of c.articulos) {
+    const previo = servidor.get(a.cod);
+    const masNuevo = desde !== null && previo && (confirmadoEn.get(a.cod) ?? -1) >= desde;
+    nuevos.set(a.cod, masNuevo ? previo : clonar(a));
+  }
+  servidor.clear();
+  nuevos.forEach((v, k) => servidor.set(k, v));
+  aplicados.forEach(id => yaAplicadas.add(id));
+  estado.articulos = c.articulos.map(a => clonar(servidor.get(a.cod)));
   indexar();
-  reaplicarPendientes();
+  for (const op of pendientesDe()) { const art = estado.porCod.get(op.cod); if (art) aplicarOp(op, art); }
   const conteos = leer('css.conteos', {});
   if (conteos[estado.sucursal] && conteos[estado.sucursal] !== c.conteo) {
     // Hubo un Nuevo conteo: las cargas viejas de esta sucursal ya no se pueden deshacer.
@@ -195,13 +225,15 @@ export async function cargarCatalogo() {
   if (estado.cargando) return;
   estado.cargando = true;
   emitir('red');
+  const desde = Date.now();
+  const pendientes = cola.pendientes().filter(o => o.sucursal === suc).map(o => o.id);
   try {
-    const r = await llamar({ accion: 'catalogo', sucursal: suc }, { timeout: 30000 });
+    const r = await llamar({ accion: 'catalogo', sucursal: suc, pendientes }, { timeout: 30000 });
     if (suc !== estado.sucursal) return;
     if (!r.ok) { aviso('No se pudo leer la planilla: ' + (r.error || r.codigo), 'error'); return; }
     marcarRed(true);
-    escribir('css.catalogo.' + suc, { articulos: r.articulos, conteo: r.conteo });
-    aplicarCatalogo(r);
+    aplicarCatalogo(r, { desde, aplicados: r.aplicados || [] });
+    guardarCache();
   } catch {
     marcarRed(false);
   } finally {
@@ -212,6 +244,9 @@ export async function cargarCatalogo() {
 
 export function cambiarSucursal(suc) {
   estado.sucursal = suc;
+  servidor.clear();
+  confirmadoEn.clear();
+  yaAplicadas.clear();
   estado.articulos = [];
   indexar();
   guardarPreferencias();

@@ -137,3 +137,50 @@ test('sin PIN configurado nadie puede reiniciar', () => {
   g.ctx.instalar();
   assert.equal(g.post({ ...base, accion: 'nuevoConteo', pin: '' }).codigo, 'PIN_INCORRECTO');
 });
+
+test('I2: sumar a una celda vacia y deshacer la deja vacia', () => {
+  const g = montar();
+  g.post({ ...base, accion: 'sumar', id: 'a', sector: 'deposito', cod: '330001', cantidad: 5 });
+  g.post({ accion: 'deshacer', id: 'b', idOriginal: 'a', usuario: 'Ana' });
+  assert.equal(celda(g, 'SOLYMAR', 2, 5), '');
+  assert.equal(g.post({ accion: 'catalogo', sucursal: 'solymar' }).articulos[0].deposito, null);
+});
+
+test('I3: sumar sobre texto escrito a mano no lo pisa y responde CONFLICTO', () => {
+  const g = montar();
+  g.hoja('SOLYMAR').filas[1][4] = '12 u';
+  const r = g.post({ ...base, accion: 'sumar', id: 'a', sector: 'deposito', cod: '330001', cantidad: 5 });
+  assert.equal(r.codigo, 'CONFLICTO');
+  assert.match(r.error, /12 u/);
+  assert.equal(celda(g, 'SOLYMAR', 2, 5), '12 u');
+  const c = g.post({ ...base, accion: 'corregir', id: 'b', sector: 'deposito', cod: '330001', valor: 7 });
+  assert.equal(c.ok, true);
+  assert.equal(g.hoja('HISTORIAL').filas.at(-1)[8], '12 u');
+});
+
+test('I5: conteo, codigos y usuario quedan como texto en HISTORIAL y deshacer anda despues de un nuevo conteo', () => {
+  const g = montar();
+  g.post({ ...base, accion: 'nuevoConteo', pin: '1234' });
+  g.post({ ...base, usuario: '2024', accion: 'sumar', id: 'a', sector: 'deposito', cod: '330001', cantidad: 4 });
+  const fila = g.hoja('HISTORIAL').filas.at(-1);
+  assert.equal(fila[4], '330001');
+  assert.equal(fila[10], '2024');
+  assert.equal(fila[11], '23-10-2026 14.30');
+  assert.equal(g.post({ accion: 'historial', sucursal: 'solymar', usuario: '2024' }).cargas.length, 1);
+  assert.equal(g.post({ accion: 'deshacer', id: 'b', idOriginal: 'a', usuario: '2024' }).ok, true);
+});
+
+test('I5: un comentario que parece fecha queda como texto y se puede deshacer', () => {
+  const g = montar();
+  g.post({ ...base, accion: 'comentar', id: 'a', cod: '330001', texto: '1/2 caja' });
+  assert.equal(celda(g, 'SOLYMAR', 2, 9), '1/2 caja');
+  assert.equal(g.post({ accion: 'deshacer', id: 'b', idOriginal: 'a', usuario: 'Ana' }).ok, true);
+});
+
+test('I1: catalogo dice cuales de las cargas pendientes del celular ya se aplicaron', () => {
+  const g = montar();
+  g.post({ ...base, accion: 'sumar', id: 'a', sector: 'deposito', cod: '330001', cantidad: 4 });
+  const r = g.post({ accion: 'catalogo', sucursal: 'solymar', pendientes: ['a', 'zz'] });
+  assert.deepEqual(r.aplicados, ['a']);
+  assert.deepEqual(g.post({ accion: 'catalogo', sucursal: 'solymar' }).aplicados, []);
+});

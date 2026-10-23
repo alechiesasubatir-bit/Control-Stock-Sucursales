@@ -66,10 +66,11 @@ function conteoVigente_(sucursal) {
   return PropertiesService.getScriptProperties().getProperty('CONTEO_' + sucursal.toUpperCase()) || 'inicial';
 }
 
-// Texto que la planilla no debe interpretar como fórmula.
+// Texto que la planilla debe guardar tal cual: sin apóstrofo, "330001" pasaría a número,
+// "23-10-2026 14.30" a fecha y "=..." a fórmula. El apóstrofo no se guarda.
 function seguro_(v) {
   var s = String(v == null ? '' : v);
-  return /^[=+\-@]/.test(s) ? "'" + s : s;
+  return s === '' ? '' : "'" + s;
 }
 
 function conBloqueo_(fn) {
@@ -131,8 +132,21 @@ function catalogo_(p) {
     ok: true,
     articulos: agruparFilas(d.filas, d.cols).map(publico_),
     conteo: conteoVigente_(p.sucursal),
+    aplicados: aplicados_(p.pendientes),
     ahora: new Date().toISOString(),
   };
+}
+
+// De las cargas que el celular todavía tiene en la cola, cuáles ya están en HISTORIAL.
+// Así el celular no las cuenta dos veces sobre un catálogo que ya las incluye.
+function aplicados_(ids) {
+  if (!ids || !ids.length) return [];
+  var h = historialHoja_();
+  var n = h.getLastRow() - 1;
+  if (n < 1) return [];
+  var hay = {};
+  h.getRange(2, 1, n, 1).getValues().forEach(function (f) { hay[String(f[0])] = true; });
+  return ids.filter(function (id) { return hay[String(id)]; });
 }
 
 function cargar_(p) {
@@ -144,9 +158,14 @@ function cargar_(p) {
     var d = leer_(p.sucursal);
     var art = articulo_(d, p.cod);
     var n = p.accion === 'sumar' ? p.cantidad : p.valor;
-    var antes = art[p.sector];
+    var col = p.sector === 'deposito' ? d.cols.deposito : d.cols.salon;
+    var aMano = textoNoNumerico(d.filas, art.filas, col);
+    if (aMano !== null && p.accion === 'sumar') {
+      throw new Error('CONFLICTO: en la planilla dice "' + aMano + '" en ' + (p.sector === 'deposito' ? 'Depósito' : 'Salón') + '. Usá Corregir para dejar el número.');
+    }
+    var antes = aMano !== null ? aMano : art[p.sector];
     var despues = aplicar(p.accion, antes, n);
-    escribir_(d, art, p.sector === 'deposito' ? d.cols.deposito : d.cols.salon, despues);
+    escribir_(d, art, col, despues);
     registrar_([p.id, new Date(), p.sucursal, p.sector, art.cod, art.desc, p.accion, n,
       antes === null ? '' : antes, despues, p.usuario, conteoVigente_(p.sucursal), '']);
     return { ok: true, articulo: releer_(p.sucursal, art.cod) };
@@ -215,7 +234,7 @@ function historial_(p) {
     var r = regs[i];
     if (r[H.sucursal] !== p.sucursal || String(r[H.conteo]) !== conteo) continue;
     if (r[H.accion] === 'nuevo_conteo') continue;
-    if (p.usuario && r[10] !== p.usuario) continue;
+    if (p.usuario && String(r[10]) !== String(p.usuario)) continue;
     var c = {};
     ENC_HISTORIAL.forEach(function (k, j) { c[k] = r[j] instanceof Date ? r[j].toISOString() : r[j]; });
     cargas.push(c);

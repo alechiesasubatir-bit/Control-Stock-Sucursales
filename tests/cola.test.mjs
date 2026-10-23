@@ -117,3 +117,25 @@ test('quitar saca una pendiente sin enviarla', async () => {
   assert.deepEqual(t.enviados, ['b']);
   assert.deepEqual(cambios, [1, 2, 1, 0]);
 });
+
+test('C1: quitar no saca una op que ya se intento enviar (pudo llegar al servidor)', async () => {
+  const t = armar({ respuestas: [new ErrorRed()] });
+  t.cola.agregar({ id: 'a' });
+  await t.cola.procesar();
+  assert.equal(t.cola.quitar('a'), false);
+  assert.equal(t.cola.pendientes()[0].intentada, true);
+});
+
+test('I4: un ERROR generico se reintenta y recien despues de 6 intentos se da por perdido', async () => {
+  const errores = [];
+  const t = armar({ respuestas: Array.from({ length: 6 }, () => ({ ok: false, codigo: 'ERROR', error: 'Service timed out' })) });
+  t.cola.onError((op, r) => errores.push(r.codigo));
+  t.cola.agregar({ id: 'a' });
+  await t.cola.procesar();
+  for (let i = 0; i < 4; i++) await t.reintentar();
+  assert.deepEqual(errores, []);
+  assert.equal(t.cola.pendientes().length, 1);
+  await t.reintentar();
+  assert.deepEqual(errores, ['ERROR']);
+  assert.equal(t.cola.pendientes().length, 0);
+});

@@ -2,6 +2,16 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
+// Como Sheets: un texto que parece número o fecha se convierte, salvo que empiece con apóstrofo,
+// que fuerza texto y no se guarda.
+function convertir(v) {
+  if (typeof v !== 'string') return v;
+  if (v.startsWith("'")) return v.slice(1);
+  if (/^-?\d+(\.\d+)?$/.test(v.trim())) return Number(v);
+  if (/^\d{1,2}[-/]\d{1,2}([-/]\d{2,4})?(\s|$)/.test(v.trim())) return new Date(2026, 0, 1);
+  return v;
+}
+
 class Hoja {
   constructor(nombre, filas) { this.nombre = nombre; this.filas = filas.map(f => f.slice()); }
   getName() { return this.nombre; }
@@ -9,8 +19,7 @@ class Hoja {
   getLastRow() { return this.filas.length; }
   getLastColumn() { return Math.max(0, ...this.filas.map(f => f.length)); }
   getDataRange() { return this.getRange(1, 1, this.getLastRow(), this.getLastColumn()); }
-  // Como Sheets: un apóstrofo inicial fuerza texto y no se guarda.
-  appendRow(f) { this.filas.push(f.map(v => typeof v === 'string' && v.startsWith("'") ? v.slice(1) : v)); }
+  appendRow(f) { this.filas.push(f.map(convertir)); }
   setFrozenRows() {}
   copyTo(ss) { const h = new Hoja('Copia de ' + this.nombre, this.filas); ss.hojas.push(h); return h; }
   getRange(r, c, nr = 1, nc = 1) {
@@ -22,7 +31,8 @@ class Hoja {
         const v = hoja.filas[r - 1 + i]?.[c - 1 + j];
         return v === undefined ? '' : v;
       })),
-      setValue: v => { celdas((i, j) => poner(i, j, typeof v === 'string' && v.startsWith("'") ? v.slice(1) : v)); },
+      setValue: v => { celdas((i, j) => poner(i, j, convertir(v))); },
+      setNumberFormat: () => {},
       clearContent: () => celdas((i, j) => poner(i, j, '')),
       setFontWeight: () => {},
     };

@@ -5,7 +5,10 @@ export class ErrorRed extends Error {
   constructor(mensaje) { super(mensaje); this.name = 'ErrorRed'; }
 }
 
-export async function llamar(cuerpo, { timeout = 15000, url = API_URL } = {}) {
+let urlActual = API_URL;
+export function fijarUrl(url) { urlActual = url; }
+
+export async function llamar(cuerpo, { timeout = 15000, url = urlActual } = {}) {
   if (!url) throw new ErrorRed('sin conexión configurada');
   const control = new AbortController();
   const reloj = setTimeout(() => control.abort(), timeout);

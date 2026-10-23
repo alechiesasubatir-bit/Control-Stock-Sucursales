@@ -4,6 +4,8 @@
 const ESPERA_INICIAL = 2000;
 const ESPERA_MAXIMA = 60000;
 const TRANSITORIOS = new Set(['OCUPADO']);
+// Un error sin código (falla pasajera de Google) se reintenta; si se repite tanto, se da por perdido.
+const INTENTOS_ERROR = 6;
 
 export function crearCola({ enviar, guardar, cargar, esperar = (ms, fn) => setTimeout(fn, ms) }) {
   let lista = [];
@@ -15,10 +17,10 @@ export function crearCola({ enviar, guardar, cargar, esperar = (ms, fn) => setTi
   const oyentes = { resultado: [], error: [], cambio: [] };
   const emitir = (tipo, ...args) => oyentes[tipo].forEach(fn => fn(...args));
 
-  const persistir = () => {
+  const guardarLista = () => {
     try { guardar(lista); } catch { /* sin almacenamiento: la cola sigue en memoria */ }
-    emitir('cambio', lista.length);
   };
+  const persistir = () => { guardarLista(); emitir('cambio', lista.length); };
 
   const programarReintento = () => {
     fallos++;
@@ -31,6 +33,12 @@ export function crearCola({ enviar, guardar, cargar, esperar = (ms, fn) => setTi
   async function vaciar() {
     while (lista.length) {
       const op = lista[0];
+      if (!op.intentada) {
+        // Desde acá la op pudo llegar al servidor aunque no veamos la respuesta: ya no se puede quitar.
+        op.intentada = true;
+        op.intentadaEn = Date.now();
+        guardarLista();
+      }
       enviando = op.id;
       let resp;
       try {
@@ -42,6 +50,11 @@ export function crearCola({ enviar, guardar, cargar, esperar = (ms, fn) => setTi
       }
       enviando = null;
       if (resp && resp.ok === false && TRANSITORIOS.has(resp.codigo)) {
+        programarReintento();
+        return;
+      }
+      if (resp && resp.ok === false && resp.codigo === 'ERROR' && (op.fallosError = (op.fallosError || 0) + 1) < INTENTOS_ERROR) {
+        guardarLista();
         programarReintento();
         return;
       }
@@ -63,7 +76,7 @@ export function crearCola({ enviar, guardar, cargar, esperar = (ms, fn) => setTi
     pendientes: () => lista.slice(),
     quitar(id) {
       const i = lista.findIndex(o => o.id === id);
-      if (i === -1 || id === enviando) return false;
+      if (i === -1 || id === enviando || lista[i].intentada) return false;
       lista.splice(i, 1);
       persistir();
       return true;

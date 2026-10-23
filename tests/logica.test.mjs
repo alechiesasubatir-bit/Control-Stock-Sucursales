@@ -97,3 +97,11 @@ test('validar rechaza decimales, ceros, negativos y sucursal desconocida', () =>
 test('filasDeArticulo acepta un alternativo y devuelve el grupo de su cod art', () => {
   assert.deepEqual(L.filasDeArticulo(V, L.ubicarColumnas(ENC), '07891799092450'), [2, 3, 4]);
 });
+test('I2: deshacer la unica suma de una celda vacia la deja vacia, no en 0', () => {
+  assert.deepEqual(L.calcularDeshacer({ accion: 'sumar', cantidad: 5, antes: '', despues: 5, estado: '' }, 5), { valor: null });
+  assert.deepEqual(L.calcularDeshacer({ accion: 'sumar', cantidad: 5, antes: 0, despues: 5, estado: '' }, 5), { valor: 0 });
+});
+test('I3: textoNoNumerico encuentra lo escrito a mano que no es un numero', () => {
+  assert.equal(L.textoNoNumerico([['', '', '', '', '12 u'], ['', '', '', '', 3]], [2, 3], 4), '12 u');
+  assert.equal(L.textoNoNumerico([['', '', '', '', '12,0'], ['', '', '', '', '']], [2, 3], 4), null);
+});

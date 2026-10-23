@@ -3,7 +3,7 @@ const VERSION = '2026.10.23-1244';
 const CACHE = 'css-' + VERSION;
 const ARCHIVOS = [
   './', 'index.html', 'css/app.css',
-  'js/main.js', 'js/nav.js', 'js/estado.js', 'js/config.js', 'js/api.js', 'js/cola.js', 'js/catalogo.js',
+  'js/main.js', 'js/nav.js', 'js/estado.js', 'js/config.js', 'js/fuente.js', 'js/api.js', 'js/cola.js', 'js/catalogo.js',
   'js/escaner.js', 'js/logo.js',
   'js/ui/ingreso.js', 'js/ui/escanear.js', 'js/ui/visor.js', 'js/ui/ficha.js', 'js/ui/filas.js',
   'js/ui/cargas.js', 'js/ui/articulos.js', 'js/ui/encargado.js', 'js/ui/confeti.js',

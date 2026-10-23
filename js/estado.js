@@ -2,6 +2,11 @@
 import { crearIndice } from './catalogo.js';
 import { llamar } from './api.js';
 import { crearCola } from './cola.js';
+import { API_URL } from './config.js';
+import { limpiarSiCambioFuente } from './fuente.js';
+
+// Antes de leer nada guardado: si cambió la planilla, lo local es de la otra y se descarta.
+limpiarSiCambioFuente(API_URL);
 
 export function leer(k, def) {
   try { const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); } catch { return def; }

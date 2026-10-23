@@ -19,6 +19,7 @@ export function ir(nombre) {
     if (b.dataset.ir === nombre) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   window.scrollTo({ top: 0 });
+  if (actual) pantallas[actual]?.ocultar?.();
   actual = nombre;
   pantallas[nombre]?.mostrar?.();
 }

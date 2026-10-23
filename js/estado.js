@@ -219,3 +219,32 @@ export function cambiarSucursal(suc) {
   emitir('cargas');
   return cargarCatalogo();
 }
+
+// Suma al registro local las cargas de este usuario que vienen del servidor (por ejemplo, de otro celular).
+export function incorporarHistorial(cargasServidor) {
+  const locales = new Set(estado.cargas.map(c => c.id));
+  const num = v => (v === '' || v === null || v === undefined ? null : Number(v));
+  let nuevas = 0;
+  for (const c of cargasServidor) {
+    if (c.accion === 'deshacer' || c.accion === 'nuevo_conteo') continue;
+    const reg = cargaPorId(c.id);
+    if (reg) {
+      if (c.estado === 'deshecho' && reg.estado !== 'deshecha') { reg.estado = 'deshecha'; nuevas++; }
+      continue;
+    }
+    if (locales.has(c.id)) continue;
+    estado.cargas.push({
+      id: c.id, accion: c.accion, sucursal: estado.sucursal, sector: c.sector || undefined, cod: String(c.cod_art),
+      desc: c.descripcion, cantidad: num(c.cantidad), valor: c.accion === 'corregir' ? num(c.despues) : undefined,
+      texto: c.accion === 'comentar' ? String(c.despues) : undefined,
+      antes: c.accion === 'comentar' ? String(c.antes ?? '') : num(c.antes),
+      hora: Date.parse(c.fecha_hora) || Date.now(), estado: c.estado === 'deshecho' ? 'deshecha' : 'guardada',
+    });
+    nuevas++;
+  }
+  if (nuevas) {
+    estado.cargas.sort((a, b) => b.hora - a.hora);
+    guardarCargas();
+    emitir('cargas');
+  }
+}

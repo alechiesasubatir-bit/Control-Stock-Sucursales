@@ -6,6 +6,9 @@ import { ir, registrarPantalla } from './nav.js';
 import { initEscanear } from './ui/escanear.js';
 import { initVisor } from './ui/visor.js';
 import { initFicha } from './ui/ficha.js';
+import { initCargas } from './ui/cargas.js';
+import { initArticulos } from './ui/articulos.js';
+import { initConfeti } from './ui/confeti.js';
 
 const $ = id => document.getElementById(id);
 // ── Avisos ───────────────────────────────────────────────
@@ -68,6 +71,9 @@ const escanear = initEscanear({ abrirVisor: () => visor.abrir() });
 registrarPantalla('escanear', escanear);
 const visor = initVisor({ buscarAMano: codigo => { ir('escanear'); escanear.buscarTexto(codigo); } });
 initFicha({ reabrirVisor: () => visor.abrir() });
+registrarPantalla('cargas', initCargas());
+registrarPantalla('articulos', initArticulos());
+initConfeti();
 
 function arrancar() {
   if (!estado.usuario || !estado.sucursal) { ir('ingreso'); return; }

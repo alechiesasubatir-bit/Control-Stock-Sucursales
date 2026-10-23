@@ -26,7 +26,7 @@ function resaltar(texto, consulta) {
 }
 
 const num = (v, et, activo) =>
-  `<span class="fila-num${activo ? ' activo' : ''}${v === null ? ' vacio' : ''}"><b>${v === null ? '—' : v}</b><i>${et}</i></span>`;
+  `<span class="fila-num${activo ? ' activo' : ''}${v === null ? ' nulo' : ''}"><b>${v === null ? '—' : v}</b><i>${et}</i></span>`;
 
 export function filaArticulo(a, sector, consulta = '') {
   return `<li><button class="fila" data-cod="${escapar(a.cod)}">

@@ -298,7 +298,7 @@ button.fila:active { transform: scale(.985); background: var(--vidrio2); }
 .fila-num b { font: 600 15px var(--f-num); }
 .fila-num i { font-style: normal; font-size: 10px; color: var(--mut); text-transform: uppercase; letter-spacing: .06em; }
 .fila-num.activo { background: rgba(251, 176, 59, .14); color: var(--amarillo); }
-.fila-num.vacio b { color: var(--mut); }
+.fila-num.nulo b { color: var(--mut); }
 .fila-coment { width: 8px; height: 8px; border-radius: 50%; background: var(--teal-l); flex: none; box-shadow: 0 0 10px var(--teal-l); }
 .lista-cuenta { font-size: 13px; color: var(--mut); margin: 0 0 10px; }
 .centinela { height: 1px; }

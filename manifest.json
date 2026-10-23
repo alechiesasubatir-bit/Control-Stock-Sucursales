@@ -1,0 +1,17 @@
+{
+  "name": "Control Stock Sucursales",
+  "short_name": "Stock",
+  "description": "Conteo de stock por escaneo para las sucursales de Prolimpio.",
+  "lang": "es-UY",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#07090f",
+  "background_color": "#07090f",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

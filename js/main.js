@@ -9,6 +9,7 @@ import { initFicha } from './ui/ficha.js';
 import { initCargas } from './ui/cargas.js';
 import { initArticulos } from './ui/articulos.js';
 import { initConfeti } from './ui/confeti.js';
+import { initEncargado } from './ui/encargado.js';
 
 const $ = id => document.getElementById(id);
 // ── Avisos ───────────────────────────────────────────────
@@ -74,6 +75,7 @@ initFicha({ reabrirVisor: () => visor.abrir() });
 registrarPantalla('cargas', initCargas());
 registrarPantalla('articulos', initArticulos());
 initConfeti();
+registrarPantalla('encargado', initEncargado());
 
 function arrancar() {
   if (!estado.usuario || !estado.sucursal) { ir('ingreso'); return; }
@@ -91,3 +93,15 @@ document.addEventListener('visibilitychange', () => {
 });
 
 arrancar();
+
+// ── Versión nueva ────────────────────────────────────────
+// El service worker nuevo toma el control; se recarga cuando no hay una ficha o la cámara abiertas.
+// Las cargas pendientes viven en localStorage, así que recargar no pierde nada.
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+  const habiaVersion = !!navigator.serviceWorker.controller;
+  let recargar = false;
+  const ocupado = () => !document.getElementById('ficha').hidden || !document.getElementById('visor').hidden;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { recargar = habiaVersion; });
+  setInterval(() => { if (recargar && !ocupado()) location.reload(); }, 3000);
+}

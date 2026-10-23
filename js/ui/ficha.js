@@ -17,6 +17,7 @@ export function initFicha({ reabrirVisor }) {
   let n = '';
   let desdeVisor = false;
   let ocupado = false;
+  let sesion = [];   // lo cargado en esta apertura de la ficha, para mostrarlo debajo del número
 
   const valorN = () => Number(n || 0);
   const nombreSector = () => NOMBRES[estado.sector];
@@ -105,6 +106,11 @@ export function initFicha({ reabrirVisor }) {
     hoja.hidden = false;
     hoja.scrollTop = 0;
     document.body.style.overflow = 'hidden';
+    sesion = [];
+    pintarSesion();
+    $('ficha-listo').innerHTML = desdeVisor
+      ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M16 8v8"/></svg>Listo · escanear otro'
+      : 'Listo';
     setModo('sumar');
     pintarNumeros();
     navigator.vibrate?.(8);
@@ -128,19 +134,35 @@ export function initFicha({ reabrirVisor }) {
     if (ocupado || okBtn.disabled || !art) return;
     const sector = estado.sector;
     const antes = art[sector];
-    if (modo === 'sumar') registrarCarga({ accion: 'sumar', sector, cod: art.cod, cantidad: valorN() });
-    else if (modo === 'corregir') registrarCarga({ accion: 'corregir', sector, cod: art.cod, valor: valorN() });
-    else registrarCarga({ accion: 'comentar', cod: art.cod, texto: textarea.value.trim() });
+    if (modo === 'sumar') {
+      registrarCarga({ accion: 'sumar', sector, cod: art.cod, cantidad: valorN() });
+      sesion.push(`+${valorN().toLocaleString('es-UY')} ${nombreSector()}`);
+    } else if (modo === 'corregir') {
+      registrarCarga({ accion: 'corregir', sector, cod: art.cod, valor: valorN() });
+      sesion.push(`= ${valorN().toLocaleString('es-UY')} ${nombreSector()}`);
+    } else {
+      registrarCarga({ accion: 'comentar', cod: art.cod, texto: textarea.value.trim() });
+      sesion.push('comentario');
+    }
     ocupado = true;
     okBtn.disabled = true;
     navigator.vibrate?.([12, 40, 24]);
     pintarNumeros(modo !== 'comentar', antes ?? 0);
     const tilde = $('tilde');
     tilde.classList.remove('ver'); void tilde.getBoundingClientRect(); tilde.classList.add('ver');
+    // La ficha queda abierta: se puede seguir sumando al mismo artículo sin volver a escanear.
     setTimeout(() => {
       tilde.classList.remove('ver');
-      cerrar({ seguir: true });
-    }, menosMovimiento() ? 450 : 900);
+      ocupado = false;
+      setModo('sumar');
+      pintarSesion();
+    }, menosMovimiento() ? 300 : 650);
+  }
+
+  function pintarSesion() {
+    const el = $('ficha-sesion');
+    el.hidden = !sesion.length;
+    el.textContent = sesion.length ? 'Cargado ahora: ' + sesion.join(' · ') : '';
   }
 
   // ── Eventos ──
@@ -148,11 +170,6 @@ export function initFicha({ reabrirVisor }) {
     const b = e.target.closest('button');
     if (b) tecla(b.dataset.t || b.textContent.trim());
   });
-  hoja.querySelectorAll('.paso').forEach(b => b.addEventListener('click', () => {
-    if (ocupado) return;
-    n = String(Math.min(MAXIMO, Math.max(0, valorN() + Number(b.dataset.paso))));
-    pintarN();
-  }));
   hoja.querySelector('.ficha-modo').addEventListener('click', e => {
     const b = e.target.closest('[data-modo]');
     if (b && !ocupado) setModo(b.dataset.modo);
@@ -168,6 +185,8 @@ export function initFicha({ reabrirVisor }) {
   }));
   textarea.addEventListener('input', pintarN);
   okBtn.addEventListener('click', confirmar);
+  $('ficha-listo').addEventListener('click', () => { if (!ocupado) cerrar({ seguir: true }); });
+  $('ficha-x').addEventListener('click', () => cerrar());
   fondo.addEventListener('click', () => cerrar());
 
   document.addEventListener('keydown', e => {

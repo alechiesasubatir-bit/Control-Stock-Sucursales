@@ -393,8 +393,8 @@ mark { background: rgba(251, 176, 59, .25); color: inherit; border-radius: 3px; 
 .ficha-meta { display: flex; gap: 14px; margin: 0; color: var(--txt2); font-size: 14px; }
 .ficha-meta span:first-child { color: var(--amarillo); }
 .ficha-codigos { margin: 4px 0 0; font-size: 11.5px; color: var(--mut); word-break: break-all; }
-.ficha-numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 10px; }
-.numero { display: flex; flex-direction: column; align-items: center; padding: 12px 6px; border-radius: var(--radio-s); background: rgba(0, 0, 0, .28); border: 1px solid var(--borde); transition: border-color .3s, background-color .3s; }
+.ficha-numeros { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 10px; }
+.numero { display: flex; flex-direction: column; align-items: center; padding: 9px 6px; border-radius: var(--radio-s); background: rgba(0, 0, 0, .28); border: 1px solid var(--borde); transition: border-color .3s, background-color .3s; }
 .numero-et { font: 700 10.5px var(--f-titulo); text-transform: uppercase; letter-spacing: .08em; color: var(--mut); }
 .numero-v { font-size: 26px; font-weight: 700; line-height: 1.25; }
 .numero.activo { border-color: rgba(251, 176, 59, .6); background: rgba(251, 176, 59, .1); }
@@ -406,13 +406,16 @@ mark { background: rgba(251, 176, 59, .25); color: inherit; border-radius: 3px; 
 .ficha-modo { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 14px; background: rgba(0, 0, 0, .3); margin-bottom: 12px; }
 .ficha-modo button { min-height: 42px; border-radius: 10px; font-weight: 600; font-size: 14px; color: var(--txt2); transition: background-color .25s, color .25s; }
 .ficha-modo button[aria-selected="true"] { background: var(--vidrio2); color: var(--txt); box-shadow: inset 0 0 0 1px var(--borde2); }
-.visor-num { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; gap: 10px; margin-bottom: 10px; }
-.visor-num output { text-align: center; font-size: 46px; font-weight: 700; line-height: 1; }
-.paso { height: 56px; border-radius: 16px; display: grid; place-items: center; background: var(--vidrio2); border: 1px solid var(--borde); }
-.paso:active { transform: scale(.93); }
+.visor-num { display: grid; place-items: center; min-height: 54px; margin-bottom: 8px; border-radius: 16px; background: rgba(0, 0, 0, .28); border: 1px solid var(--borde); }
+.visor-num output { font-size: 40px; font-weight: 700; line-height: 1; }
+.ficha-sesion { margin: 0 0 10px; text-align: center; font-size: 13.5px; color: var(--verde); animation: entrar .3s var(--suave); }
+.ficha-x { position: absolute; top: 14px; right: 10px; z-index: 1; }
+.ficha-cabeza { padding-right: 44px; }
+.boton-secundario { margin-top: 8px; min-height: 48px; background: var(--vidrio2); border: 1px solid var(--borde2); color: var(--txt); }
+.boton-secundario svg { width: 20px; height: 20px; }
 .ficha-aviso { text-align: center; font-size: 13px; color: var(--amarillo); margin: -4px 0 10px; }
-.teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-.teclado button { min-height: 54px; border-radius: 14px; font: 600 22px var(--f-num); background: rgba(255, 255, 255, .055); border: 1px solid var(--borde); display: grid; place-items: center; transition: background-color .12s, transform .1s; }
+.teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+.teclado button { min-height: 48px; border-radius: 14px; font: 600 22px var(--f-num); background: rgba(255, 255, 255, .055); border: 1px solid var(--borde); display: grid; place-items: center; transition: background-color .12s, transform .1s; }
 .teclado button:active { background: rgba(251, 176, 59, .22); transform: scale(.95); }
 .teclado [data-t] { color: var(--txt2); font-size: 18px; }
 .ficha-texto textarea { resize: none; min-height: 110px; margin-bottom: 12px; line-height: 1.4; }

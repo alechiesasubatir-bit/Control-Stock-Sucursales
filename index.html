@@ -220,6 +220,9 @@
   <div class="hoja-fondo" id="ficha-fondo" hidden></div>
   <section class="hoja" id="ficha" role="dialog" aria-modal="true" aria-labelledby="ficha-desc" hidden>
     <div class="hoja-agarre" id="ficha-agarre" aria-hidden="true"><span></span></div>
+    <button class="icono-boton ficha-x" id="ficha-x" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
     <header class="ficha-cabeza">
       <h2 id="ficha-desc">—</h2>
       <p class="ficha-meta"><span class="mono" id="ficha-cod"></span><span id="ficha-precio" class="mono"></span></p>
@@ -240,10 +243,9 @@
 
     <div class="ficha-cantidad" id="ficha-cantidad">
       <div class="visor-num">
-        <button class="paso" data-paso="-1" aria-label="Uno menos"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
         <output class="mono" id="ficha-n" aria-live="polite">0</output>
-        <button class="paso" data-paso="1" aria-label="Uno más"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
+      <p class="ficha-sesion" id="ficha-sesion" hidden></p>
       <p class="ficha-aviso" id="ficha-aviso" hidden>Reemplaza el número actual de <b></b>.</p>
       <div class="teclado" id="teclado">
         <button>1</button><button>2</button><button>3</button>
@@ -257,6 +259,7 @@
       <textarea id="ficha-textarea" rows="3" maxlength="300" placeholder="Ej. 3 envases golpeados, vence en marzo…"></textarea>
     </div>
     <button class="boton boton-principal boton-ancho ficha-ok" id="ficha-ok">Sumar</button>
+    <button class="boton boton-secundario boton-ancho ficha-listo" id="ficha-listo">Listo</button>
     <svg class="tilde" id="tilde" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="m15 27 7 7 15-16"/></svg>
   </section>
 

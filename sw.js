@@ -1,5 +1,5 @@
 // Service worker: cachea solo los archivos de la app. Los datos van siempre a la red.
-const VERSION = '2026.10.23-1158';
+const VERSION = '2026.10.23-1211';
 const CACHE = 'css-' + VERSION;
 const ARCHIVOS = [
   './', 'index.html', 'css/app.css',
